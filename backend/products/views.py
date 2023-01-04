@@ -6,10 +6,12 @@ from rest_framework.decorators import api_view
 from django.shortcuts import get_object_or_404
 
 from api.authentication import TokenAuthentication
-from api.mixins import StaffEditorPermissionMixin
+from api.mixins import StaffEditorPermissionMixin, UserQuerySetMixin
 
 
-class ProductListAPIView(StaffEditorPermissionMixin, generics.ListAPIView):
+class ProductListAPIView(
+    UserQuerySetMixin, StaffEditorPermissionMixin, generics.ListAPIView
+):
     """List."""
 
     queryset = Product.objects.all()
@@ -19,11 +21,20 @@ class ProductListAPIView(StaffEditorPermissionMixin, generics.ListAPIView):
         TokenAuthentication,
     ]
 
+    # This can be also used as a mixin...
+    # def get_queryset(self, *args, **kwargs):
+    #     qs = super().get_queryset(*args, **kwargs)
+    #     request = self.request
+    #     new_qs = qs.filter(user=request.user)
+    #     return new_qs
+
 
 product_list_view = ProductListAPIView.as_view()
 
 
-class ProductDetailAPIView(StaffEditorPermissionMixin, generics.RetrieveAPIView):
+class ProductDetailAPIView(
+    UserQuerySetMixin, StaffEditorPermissionMixin, generics.RetrieveAPIView
+):
     """Detail."""
 
     queryset = Product.objects.all()
@@ -37,7 +48,9 @@ class ProductDetailAPIView(StaffEditorPermissionMixin, generics.RetrieveAPIView)
 product_detail_view = ProductDetailAPIView.as_view()
 
 
-class ProductUpdateAPIView(StaffEditorPermissionMixin, generics.UpdateAPIView):
+class ProductUpdateAPIView(
+    UserQuerySetMixin, StaffEditorPermissionMixin, generics.UpdateAPIView
+):
     """Update."""
 
     queryset = Product.objects.all()
@@ -57,7 +70,9 @@ class ProductUpdateAPIView(StaffEditorPermissionMixin, generics.UpdateAPIView):
 product_update_view = ProductUpdateAPIView.as_view()
 
 
-class ProductDeleteAPIView(StaffEditorPermissionMixin, generics.DestroyAPIView):
+class ProductDeleteAPIView(
+    UserQuerySetMixin, StaffEditorPermissionMixin, generics.DestroyAPIView
+):
     """Delete."""
 
     queryset = Product.objects.all()
@@ -75,7 +90,9 @@ class ProductDeleteAPIView(StaffEditorPermissionMixin, generics.DestroyAPIView):
 product_delete_view = ProductDeleteAPIView.as_view()
 
 
-class ProductCreateAPIView(StaffEditorPermissionMixin, generics.CreateAPIView):
+class ProductCreateAPIView(
+    UserQuerySetMixin, StaffEditorPermissionMixin, generics.CreateAPIView
+):
     """Create."""
 
     queryset = Product.objects.all()
@@ -92,7 +109,7 @@ class ProductCreateAPIView(StaffEditorPermissionMixin, generics.CreateAPIView):
         content = serializer.validated_data.get("content") or None
         if content is None:
             content = title
-        serializer.save(content=content)
+        serializer.save(user=self.request.user, content=content)
 
 
 product_create_view = ProductCreateAPIView.as_view()
